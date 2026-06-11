@@ -11,8 +11,13 @@ upstream.
 
 ## Status
 
-Early development. The Qt6 source tree builds and runs natively on macOS; Linux and
-Windows builds are validated through continuous integration.
+Early development. The Qt6 source tree builds and runs natively on macOS, and
+**Linux and macOS builds are validated in CI** on every push.
+
+**Windows is a work in progress.** The CI Windows job builds the full mingw
+toolchain and Hamlib from source, but configuration currently stops at WSJT-X's
+OmniRig COM integration, which requires OmniRig to be installed/registered on the
+build host. The Windows job is intentionally non-blocking until this is resolved.
 
 ## Building
 

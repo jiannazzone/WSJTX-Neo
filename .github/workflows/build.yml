@@ -1,9 +1,8 @@
 name: build
 
+# Manually triggered only — run from the Actions tab ("Run workflow") or via
+# `gh workflow run build.yml`. Avoids spending runner minutes on every push.
 on:
-  push:
-    branches: [ main, master ]
-  pull_request:
   workflow_dispatch:
 
 # The application source lives in the wsjtx/ subdirectory.
@@ -84,9 +83,10 @@ jobs:
   windows:
     name: windows (mingw)
     runs-on: windows-latest
-    # Windows is a work in progress: Hamlib is not packaged for mingw (built from
-    # source below) and ActiveQt support may need further work. Kept non-blocking
-    # so Linux/macOS status is not gated on it.
+    # Windows is a work in progress. Hamlib is built from source (no mingw package).
+    # Configure currently stops at the OmniRig COM integration (CMakeLists.txt WIN32
+    # block), which needs OmniRig installed/registered on the build host. Kept
+    # non-blocking so Linux/macOS status is not gated on it.
     continue-on-error: true
     defaults:
       run:
