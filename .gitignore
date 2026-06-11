@@ -1,0 +1,19 @@
+# Build output (out-of-source)
+/build/
+build/
+cmake-build-*/
+
+# macOS
+.DS_Store
+
+# Editor / tooling
+*.swp
+*~
+.idea/
+.vscode/
+
+# Packaged installers at root (artifacts come from CI)
+/*.dmg
+/*.exe
+/*.deb
+/*.rpm

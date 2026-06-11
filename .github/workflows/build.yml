@@ -1,0 +1,126 @@
+name: build
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+  workflow_dispatch:
+
+# The application source lives in the wsjtx/ subdirectory.
+# Toolchain is uniform across platforms: GCC/Clang for C/C++ and gfortran for the
+# Fortran DSP. Windows uses MSYS2/mingw (not MSVC) because the DSP is Fortran.
+# Docs and *nix manpages are disabled to avoid the asciidoc toolchain.
+
+jobs:
+  linux:
+    name: linux (ubuntu)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            build-essential gfortran cmake ninja-build \
+            libfftw3-dev libusb-1.0-0-dev libhamlib-dev libboost-all-dev \
+            libgl1-mesa-dev \
+            qt6-base-dev qt6-base-dev-tools \
+            qt6-multimedia-dev qt6-serialport-dev qt6-websockets-dev \
+            qt6-tools-dev qt6-tools-dev-tools qt6-l10n-tools \
+            libqt6sql6-sqlite
+
+      - name: Configure
+        run: |
+          cmake -G Ninja -S wsjtx -B build \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DWSJT_GENERATE_DOCS=OFF \
+            -DWSJT_SKIP_MANPAGES=ON
+
+      - name: Build
+        run: cmake --build build
+
+      - name: Upload binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: wsjtx-neo-linux
+          path: |
+            build/wsjtx
+            build/jt9
+          if-no-files-found: error
+
+  macos:
+    name: macos (arm64)
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: brew install qt gcc fftw boost hamlib libusb ninja
+
+      - name: Configure
+        run: |
+          cmake -G Ninja -S wsjtx -B build \
+            -DCMAKE_PREFIX_PATH="$(brew --prefix qt);$(brew --prefix)" \
+            -DCMAKE_Fortran_COMPILER="$(brew --prefix)/bin/gfortran" \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DWSJT_GENERATE_DOCS=OFF \
+            -DWSJT_SKIP_MANPAGES=ON
+
+      - name: Build
+        run: cmake --build build
+
+      - name: Upload app
+        uses: actions/upload-artifact@v4
+        with:
+          name: wsjtx-neo-macos
+          path: build/wsjtx.app
+          if-no-files-found: error
+
+  windows:
+    name: windows (mingw)
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up MSYS2 / mingw toolchain
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: >-
+            base-devel
+            git
+            mingw-w64-x86_64-gcc
+            mingw-w64-x86_64-gcc-fortran
+            mingw-w64-x86_64-cmake
+            mingw-w64-x86_64-ninja
+            mingw-w64-x86_64-qt6-base
+            mingw-w64-x86_64-qt6-multimedia
+            mingw-w64-x86_64-qt6-serialport
+            mingw-w64-x86_64-qt6-websockets
+            mingw-w64-x86_64-qt6-tools
+            mingw-w64-x86_64-fftw
+            mingw-w64-x86_64-boost
+            mingw-w64-x86_64-hamlib
+            mingw-w64-x86_64-libusb
+
+      - name: Configure
+        run: |
+          cmake -G Ninja -S wsjtx -B build \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DWSJT_GENERATE_DOCS=OFF \
+            -DWSJT_SKIP_MANPAGES=ON
+
+      - name: Build
+        run: cmake --build build
+
+      - name: Upload binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: wsjtx-neo-windows
+          path: build/wsjtx.exe
+          if-no-files-found: error
