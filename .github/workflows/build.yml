@@ -126,7 +126,10 @@ jobs:
           mkdir -p /tmp/hamlib
           tar -xf /tmp/hamlib.tar.gz -C /tmp/hamlib --strip-components=1
           cd /tmp/hamlib
-          ./configure --prefix=/mingw64 --disable-static --without-cxx-binding
+          # --without-readline: the rigctl CLI tools fail to compile against
+          # mingw readline, and WSJT-X only links libhamlib (not those tools).
+          ./configure --prefix=/mingw64 --disable-static --without-cxx-binding \
+            --without-readline
           make -j$(nproc)
           make install
 
