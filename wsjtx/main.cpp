@@ -51,6 +51,7 @@
 #include "Radio.hpp"
 #include "models/FrequencyList.hpp"
 #include "widgets/SplashScreen.hpp"
+#include "widgets/NeoTheme.hpp"         // WSJT-X Neo cross-platform theme
 #include "widgets/MessageBox.hpp"       // last to avoid nasty MS macro definitions
 #include "UnixSignalHandler.hpp"
 
@@ -142,6 +143,10 @@ int main(int argc, char *argv[])
       // Override programs executable basename as application name.
       a.setApplicationName ("WSJT-X");
       a.setApplicationVersion (version ());
+
+      // WSJT-X Neo: apply the cross-platform theme before any baseline
+      // stylesheet snapshot so it persists across configuration switches.
+      NeoTheme::apply (a);
 
       QCommandLineParser parser;
       parser.setApplicationDescription ("\n" PROJECT_DESCRIPTION);
